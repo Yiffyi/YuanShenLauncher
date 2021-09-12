@@ -68,6 +68,8 @@ namespace Launcher
             foreach(string f in result.PkgVersions)
             {
                 outputList.WriteLine(result.RemoteApi.DecompressedFileUrl(result.DecompressedPath, f).AbsoluteUri);
+                outputList.WriteLine($"  dir={targetGameDirectory}");
+                outputList.WriteLine($"  out={f}");
             }
             foreach (MHYPkgVersion f in result.DeltaFiles)
             {
