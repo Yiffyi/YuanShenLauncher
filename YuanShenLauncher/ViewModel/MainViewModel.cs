@@ -1,9 +1,10 @@
 using GalaSoft.MvvmLight;
-using GalaSoft.MvvmLight.Command;
+using GalaSoft.MvvmLight.CommandWpf;
 using GalaSoft.MvvmLight.Threading;
 using System.Collections.Generic;
 using Launcher.Model;
 using Launcher.Service;
+using System.Threading.Tasks;
 
 namespace Launcher.ViewModel
 {
@@ -81,7 +82,7 @@ namespace Launcher.ViewModel
             FetchPkgCmd.RaiseCanExecuteChanged();
             MHYApi api = new MHYApi(InputServer);
 
-            DispatcherHelper.RunAsync(async () =>
+            Task.Run(async () =>
             {
                 var res = await api.Resource();
                 this.Diffs = res.Data.Game.Diffs;

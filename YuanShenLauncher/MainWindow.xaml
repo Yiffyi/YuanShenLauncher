@@ -56,7 +56,7 @@
         <StackPanel>
             <!--<TextBlock Text="{Binding ElementName=mainWindow, Path=FontFamily}" />-->
             <view:GameServerControl Server="{Binding Path=DataContext.InputServer, Mode=TwoWay, ElementName=mainWindow}" />
-            <!--<view:GameVersionControl />-->
+            <view:GameVersionControl />
             <TextBlock Margin="4,16,4,4" Style="{StaticResource MaterialDesignHeadline6TextBlock}">完整包</TextBlock>
             <Grid>
                 <Grid.RowDefinitions>
