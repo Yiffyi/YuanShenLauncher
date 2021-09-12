@@ -1,4 +1,5 @@
-﻿using Downloader;
+﻿using Launcher.Model;
+using Launcher.Service;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -8,88 +9,106 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Launcher.Model;
-using Launcher.Service;
 
 namespace Launcher
 {
-    public class CreateDeltaVersionResult
+    public class SolveDeltaVersionResult
     {
+        public MHYApi RemoteApi { get; set; }
+        public string DecompressedPath { get; set; }
+        public string SourceGameDirectory { get; set; }
+        public IEnumerable<string> PkgVersions { get; set; }
+        public Dictionary<string, MHYPkgVersion> LocalPkgVersionDict { get; set; }
         public IEnumerable<MHYPkgVersion> DuplicatedFiles { get; set; }
         public IEnumerable<MHYPkgVersion> DeltaFiles { get; set; }
-        public List<MHYPkgVersion> HardLinkErrors { get; set; }
     }
 
     public static class MHYGameHelper
     {
-        public static async Task<CreateDeltaVersionResult> CreateDeltaVersion(string pkgName, string sourceGameDirectory, DownloadService downloader, MHYApi remoteApi, string targetGameDirectory, bool dryRun)
+        public static async Task<SolveDeltaVersionResult> SolveDeltaVersion(string sourceGameDirectory, MHYApi remoteApi)
         {
-            IEnumerable<MHYPkgVersion> localPkgVersion = ParsePkgVersion(Path.Combine(sourceGameDirectory, pkgName));
+            List<string> languagePacks = FindLanguagePacks(sourceGameDirectory);
+            IEnumerable<MHYPkgVersion> localPkgVersion = ParsePkgVersion(Path.Combine(sourceGameDirectory, "pkg_version"));
+            foreach (string fn in languagePacks)
+            {
+                localPkgVersion = localPkgVersion.Concat(ParsePkgVersion(Path.Combine(sourceGameDirectory, fn)));
+            }
 
+            IEnumerable<MHYPkgVersion> remotePkgVersion;
             Model.MHYResource.Root osResources = await remoteApi.Resource();
             string decompressedPath = osResources.Data.Game.Latest.DecompressedPath;
-            IEnumerable<MHYPkgVersion> remotePkgVersion;
-            if (!dryRun)
+            using (Stream stream = await remoteApi.DecompressedFile(decompressedPath, "pkg_version"))
             {
-                await downloader.DownloadFileTaskAsync(remoteApi.DecompressedFileUrl(decompressedPath, pkgName).AbsoluteUri, Path.Combine(targetGameDirectory, pkgName));
-                remotePkgVersion = ParsePkgVersion(Path.Combine(targetGameDirectory, pkgName));
+                remotePkgVersion = ParsePkgVersion(stream);
             }
-            else
+            foreach (string fn in languagePacks)
             {
-                using (var stream = await remoteApi.DecompressedFile(decompressedPath, pkgName))
+                using (Stream stream = await remoteApi.DecompressedFile(decompressedPath, fn))
                 {
-                    remotePkgVersion = ParsePkgVersion(stream);
+                    remotePkgVersion = remotePkgVersion.Concat(ParsePkgVersion(stream));
                 }
             }
 
-            CreateDeltaVersionResult result = new CreateDeltaVersionResult
+            SolveDeltaVersionResult result = new SolveDeltaVersionResult
             {
+                RemoteApi = remoteApi,
+                DecompressedPath = decompressedPath,
+                SourceGameDirectory = sourceGameDirectory,
+                PkgVersions = languagePacks.Append("pkg_version"),
+                LocalPkgVersionDict = localPkgVersion.ToDictionary(fv => fv.ResourceName),
                 DuplicatedFiles = remotePkgVersion.Intersect(localPkgVersion, new MHYPkgVersionCanLink()),
                 DeltaFiles = remotePkgVersion.Except(localPkgVersion, new MHYPkgVersionCanLink())
             };
 
-            if (!dryRun)
+            return result;
+        }
+
+        public static void DeltaFilesToAria2(SolveDeltaVersionResult result, string targetGameDirectory, StreamWriter outputList)
+        {
+            foreach(string f in result.PkgVersions)
             {
+                outputList.WriteLine(result.RemoteApi.DecompressedFileUrl(result.DecompressedPath, f).AbsoluteUri);
+            }
+            foreach (MHYPkgVersion f in result.DeltaFiles)
+            {
+                outputList.WriteLine(result.RemoteApi.DecompressedFileUrl(result.DecompressedPath, f.RemoteName).AbsoluteUri);
+                outputList.WriteLine($"  dir={targetGameDirectory}");
+                outputList.WriteLine($"  out={f.RemoteName}");
+                outputList.WriteLine($"  checksum=md5={f.MD5}");
+                outputList.WriteLine($"  check-integrity=true");
+            }
+            outputList.Close();
+        }
 
-                foreach (MHYPkgVersion f in result.DeltaFiles)
+        public static List<MHYPkgVersion> LinkDeltaVersion(SolveDeltaVersionResult result, string targetGameDirectory)
+        {
+            List<MHYPkgVersion> hardLinkErrors = new List<MHYPkgVersion>();
+            foreach (MHYPkgVersion f in result.DuplicatedFiles)
+            {
+                Console.WriteLine($"os & cn: {f.RemoteName}");
+                string fPath = Path.Combine(targetGameDirectory, f.RemoteName);
+                if (!File.Exists(fPath))
                 {
-                    string fPath = Path.Combine(targetGameDirectory, f.RemoteName);
-                    Console.WriteLine($"os - cn: {f.RemoteName}");
-                    if (!File.Exists(fPath))
-                    {
-                        await downloader.DownloadFileTaskAsync(remoteApi.DecompressedFileUrl(decompressedPath, f.RemoteName).AbsoluteUri, fPath);
-                    }
-                }
-
-                Dictionary<string, MHYPkgVersion> localPkgVersionDict = localPkgVersion.ToDictionary(fv => fv.ResourceName);
-                foreach (MHYPkgVersion f in result.DuplicatedFiles)
-                {
-                    string fPath = Path.Combine(targetGameDirectory, f.RemoteName);
-                    Console.WriteLine($"os & cn: {f.RemoteName}");
                     Directory.CreateDirectory(Path.GetDirectoryName(fPath));
-                    if (!File.Exists(fPath))
+                    bool ret = NativeMethod.CreateHardLink(fPath, Path.Combine(result.SourceGameDirectory, result.LocalPkgVersionDict[f.ResourceName].RemoteName), IntPtr.Zero);
+                    if (!ret)
                     {
-                        bool ret = NativeMethod.CreateHardLink(fPath, Path.Combine(sourceGameDirectory, localPkgVersionDict[f.ResourceName].RemoteName), IntPtr.Zero);
-                        if (!ret)
-                        {
-                            result.HardLinkErrors.Add(f);
-                        }
+                        hardLinkErrors.Add(f);
                     }
                 }
             }
-
-            return result;
+            return hardLinkErrors;
         }
 
         public static List<string> FindLanguagePacks(string gameDirectory)
         {
             List<string> result = new List<string>();
-            foreach (var f in Directory.EnumerateFiles(gameDirectory))
+            foreach (string f in Directory.EnumerateFiles(gameDirectory))
             {
                 string fn = Path.GetFileName(f);
                 if (fn.StartsWith("Audio_") && fn.EndsWith("_pkg_version"))
                 {
-                    result.Append(f);
+                    result.Add(fn);
                 }
             }
 

@@ -1,12 +1,11 @@
-﻿using Downloader;
-using GalaSoft.MvvmLight;
-using GalaSoft.MvvmLight.Command;
+﻿using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.CommandWpf;
+using Launcher.Model;
 using Microsoft.Win32;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using Launcher.Model;
+using System.Threading.Tasks;
 
 namespace Launcher.ViewModel
 {
@@ -50,18 +49,18 @@ namespace Launcher.ViewModel
             if ((bool)d.ShowDialog())
             {
                 SourcePath = Path.GetDirectoryName(d.FileName);
-                BackgroundWorker verifyWorker = new BackgroundWorker();
-                verifyWorker.WorkerReportsProgress = true;
-                verifyWorker.DoWork += new DoWorkEventHandler((sender, args) =>
-                {
-                    DamagedFiles = MHYGameHelper.VerifyPackage(SourcePath, MHYGameHelper.ParsePkgVersion(Path.Combine(SourcePath, "Audio_Chinese_pkg_version")), verifyWorker.ReportProgress);
-                });
-                verifyWorker.ProgressChanged += new ProgressChangedEventHandler((sender, args) =>
-                {
-                    VerifyProgress = args.ProgressPercentage;
-                });
+                //BackgroundWorker verifyWorker = new BackgroundWorker();
+                //verifyWorker.WorkerReportsProgress = true;
+                //verifyWorker.DoWork += new DoWorkEventHandler((sender, args) =>
+                //{
+                //    DamagedFiles = MHYGameHelper.VerifyPackage(SourcePath, MHYGameHelper.ParsePkgVersion(Path.Combine(SourcePath, "Audio_Chinese_pkg_version")), verifyWorker.ReportProgress);
+                //});
+                //verifyWorker.ProgressChanged += new ProgressChangedEventHandler((sender, args) =>
+                //{
+                //    VerifyProgress = args.ProgressPercentage;
+                //});
 
-                verifyWorker.RunWorkerAsync();
+                //verifyWorker.RunWorkerAsync();
             }
         }
 
@@ -70,6 +69,21 @@ namespace Launcher.ViewModel
         {
             get => targetPath;
             set => Set(ref targetPath, value);
+        }
+
+        private bool busy;
+        public bool Busy
+        {
+            get => busy;
+            set
+            {
+                Set(ref busy, value);
+                SelectSourceCmd.RaiseCanExecuteChanged();
+                SelectTargetCmd.RaiseCanExecuteChanged();
+                SolveDeltaVersionCmd.RaiseCanExecuteChanged();
+                LinkDuplicatedFilesCmd.RaiseCanExecuteChanged();
+                GenerateAria2ListCmd.RaiseCanExecuteChanged();
+            }
         }
 
         public RelayCommand SelectTargetCmd { get; set; }
@@ -82,8 +96,8 @@ namespace Launcher.ViewModel
             }
         }
 
-        private CreateDeltaVersionResult deltaVersionResult;
-        public CreateDeltaVersionResult DeltaVersionResult
+        private SolveDeltaVersionResult deltaVersionResult;
+        public SolveDeltaVersionResult DeltaVersionResult
         {
             get => deltaVersionResult;
             set
@@ -92,6 +106,13 @@ namespace Launcher.ViewModel
                 DuplicatedFileSize = DeltaVersionResult.DuplicatedFiles.Sum(item => item.FileSize);
                 DeltaFileSize = DeltaVersionResult.DeltaFiles.Sum(item => item.FileSize);
             }
+        }
+
+        private List<string> localLanguagePacks;
+        public List<string> LocalLanguagePacks
+        {
+            get => localLanguagePacks;
+            set => Set(ref localLanguagePacks, value);
         }
 
         private long duplicatedFileSize;
@@ -108,51 +129,45 @@ namespace Launcher.ViewModel
             set => Set(ref deltaFileSize, value);
         }
 
-        private int filesToDownload;
-        public int FilesToDownload
+        public RelayCommand SolveDeltaVersionCmd { get; set; }
+        public async void SolveDeltaVersion()
         {
-            get => filesToDownload;
-            set => Set(ref filesToDownload, value);
+            Busy = true;
+            DeltaVersionResult = await MHYGameHelper.SolveDeltaVersion(SourcePath, Server.Api);
+            Busy = false;
         }
 
-        private double downloadRate;
-        public double DownloadRate
+        public RelayCommand LinkDuplicatedFilesCmd { get; set; }
+        public void LinkDuplicatedFiles()
         {
-            get => downloadRate;
-            set => Set(ref downloadRate, value);
-        }
-
-        public RelayCommand<bool> CreateDeltaVersionCmd { get; set; }
-        public async void CreateDeltaVersion(bool dryRun)
-        {
-            DeltaVersionResult = await MHYGameHelper.CreateDeltaVersion("pkg_version", SourcePath, null, Server.Api, null, true);
-            
-            if (!dryRun)
+            Task.Run(() =>
             {
-                DownloadService dl = new DownloadService();
-                FilesToDownload = DeltaVersionResult.DeltaFiles.Count();
-                //string current;
-                //dl.DownloadStarted += (object sender, DownloadStartedEventArgs e) =>
-                //{
-                //    current = e.FileName;
-                //};
-                dl.DownloadFileCompleted += (object sender, AsyncCompletedEventArgs args) =>
-                {
-                    FilesToDownload--;
-                };
-                dl.DownloadProgressChanged += (object sender, DownloadProgressChangedEventArgs e) =>
-                {
-                    DownloadRate = e.BytesPerSecondSpeed;
-                };
-                await MHYGameHelper.CreateDeltaVersion("pkg_version", SourcePath, dl, Server.Api, TargetPath, false);
+                Busy = true;
+                MHYGameHelper.LinkDeltaVersion(DeltaVersionResult, TargetPath);
+                Busy = false;
+            });
+        }
+
+        public RelayCommand GenerateAria2ListCmd { get; set; }
+        public void GenerateAria2List()
+        {
+            SaveFileDialog d = new SaveFileDialog
+            {
+                Filter = "Aria2 输入列表|*.txt"
+            };
+            if ((bool)d.ShowDialog())
+            {
+                MHYGameHelper.DeltaFilesToAria2(DeltaVersionResult, TargetPath, new StreamWriter(d.FileName, false));
             }
         }
 
         public GameVersionViewModel()
         {
-            SelectSourceCmd = new RelayCommand(SelectSource);
-            SelectTargetCmd = new RelayCommand(SelectTarget);
-            CreateDeltaVersionCmd = new RelayCommand<bool>(CreateDeltaVersion);
+            SelectSourceCmd = new RelayCommand(SelectSource, () => !Busy);
+            SelectTargetCmd = new RelayCommand(SelectTarget, () => !Busy);
+            SolveDeltaVersionCmd = new RelayCommand(SolveDeltaVersion, () => !Busy);
+            LinkDuplicatedFilesCmd = new RelayCommand(LinkDuplicatedFiles, () => !Busy && DeltaVersionResult != null);
+            GenerateAria2ListCmd = new RelayCommand(GenerateAria2List, () => !Busy && DeltaVersionResult != null);
         }
     }
 }

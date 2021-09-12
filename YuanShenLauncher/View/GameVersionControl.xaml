@@ -91,15 +91,19 @@
                     EnableRowVirtualization="True"
                     IsReadOnly="True"
                     ItemsSource="{Binding DeltaVersionResult.DuplicatedFiles}" />
-                <Button
-                    Grid.Row="0"
-                    Grid.Column="1"
-                    Command="{Binding CreateDeltaVersionCmd}">
-                    <Button.CommandParameter>
-                        <sys:Boolean>False</sys:Boolean>
-                    </Button.CommandParameter>
-                    检查差异
-                </Button>
+                <StackPanel Grid.Row="0" Grid.Column="1">
+                    <Button Command="{Binding SolveDeltaVersionCmd}">
+                        检查
+                    </Button>
+
+                    <Button Command="{Binding LinkDuplicatedFilesCmd}">
+                        合并相同
+                    </Button>
+                    <Button Command="{Binding GenerateAria2ListCmd}">
+                        生成列表
+                    </Button>
+                </StackPanel>
+
                 <DataGrid
                     Grid.Row="0"
                     Grid.Column="2"
@@ -129,29 +133,15 @@
                     TargetUpdated="DgDamagedFiles_TargetUpdated">
                     <DataGrid.Columns />
                 </DataGrid>-->
-
-                <Label
-                    Grid.Row="1"
-                    Grid.Column="0"
+                <StackPanel Grid.Row="1"
+                    Grid.Column="0">
+                    <Label
                     Content="{Binding DuplicatedFileSize, Converter={StaticResource sizeConv}}" />
-                <Button
-                    Grid.Row="1"
-                    Grid.Column="1"
-                    Command="{Binding CreateDeltaVersionCmd}">
-                    <Button.CommandParameter>
-                        <sys:Boolean>False</sys:Boolean>
-                    </Button.CommandParameter>
-                    干活
-                </Button>
+                </StackPanel>
                 <StackPanel Grid.Row="1" Grid.Column="2">
                     <TextBlock>
                         <Run>差异文件大小：</Run>
                         <Run Text="{Binding DeltaFileSize, Converter={StaticResource sizeConv}}" />
-                        <Run>还需要下载：</Run>
-                        <Run Text="{Binding FilesToDownload}" />
-                        <LineBreak />
-                        <Run>当前速度：</Run>
-                        <Run Text="{Binding DownloadRate, Converter={StaticResource sizeConv}}" />
                     </TextBlock>
                 </StackPanel>
             </Grid>
