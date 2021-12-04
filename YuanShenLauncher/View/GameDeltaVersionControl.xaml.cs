@@ -8,10 +8,10 @@ namespace Launcher.View
     /// <summary>
     /// GameDeltaVersion.xaml 的交互逻辑
     /// </summary>
-    public partial class GameDeltaVersion : UserControl
+    public partial class GameDeltaVersionControl : UserControl
     {
 
-        public GameDeltaVersion()
+        public GameDeltaVersionControl()
         {
             InitializeComponent();
         }

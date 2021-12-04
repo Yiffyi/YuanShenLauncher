@@ -1,5 +1,5 @@
 ﻿<UserControl
-    x:Class="Launcher.View.GameDeltaVersion"
+    x:Class="Launcher.View.GameDeltaVersionControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -16,9 +16,13 @@
     <UserControl.Resources>
         <local:FileSizeConverter x:Key="sizeConv" />
     </UserControl.Resources>
-    <DockPanel>
+    <DockPanel Margin="16">
+
+        <TextBlock DockPanel.Dock="Top" Style="{StaticResource MaterialDesignHeadline3TextBlock}">
+            差异版本创建
+        </TextBlock>
         <StackPanel>
-            <view:GameServerControl Server="{Binding Path=DataContext.Server, Mode=TwoWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type view:GameDeltaVersion}}}" />
+            <view:GameServerControl Server="{Binding Path=DataContext.Server, Mode=TwoWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type view:GameDeltaVersionControl}}}" />
             <Grid>
                 <Grid.Resources>
                     <Style TargetType="md:PackIcon">
