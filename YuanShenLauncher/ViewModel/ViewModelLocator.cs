@@ -42,13 +42,16 @@ namespace Launcher.ViewModel
             ////}
 
             SimpleIoc.Default.Register<MainViewModel>();
-            SimpleIoc.Default.Register<GameVersionViewModel>();
+            SimpleIoc.Default.Register<GameRemoteVersionViewModel>();
+            SimpleIoc.Default.Register<GameDeltaVersionViewModel>();
             SimpleIoc.Default.Register<GameServerViewModel>();
         }
 
         public MainViewModel Main => ServiceLocator.Current.GetInstance<MainViewModel>();
 
-        public GameVersionViewModel GameVersion => ServiceLocator.Current.GetInstance<GameVersionViewModel>();
+        public GameRemoteVersionViewModel GameRemoteVersion => ServiceLocator.Current.GetInstance<GameRemoteVersionViewModel>();
+
+        public GameDeltaVersionViewModel GameDeltaVersion => ServiceLocator.Current.GetInstance<GameDeltaVersionViewModel>();
 
         public GameServerViewModel GameServer => ServiceLocator.Current.GetInstance<GameServerViewModel>();
 

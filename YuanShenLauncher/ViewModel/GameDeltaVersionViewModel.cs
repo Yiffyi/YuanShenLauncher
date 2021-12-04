@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Launcher.ViewModel
 {
-    public class GameVersionViewModel : ViewModelBase
+    public class GameDeltaVersionViewModel : ViewModelBase
     {
         private MHYGameServer server;
         public MHYGameServer Server
@@ -161,7 +161,7 @@ namespace Launcher.ViewModel
             }
         }
 
-        public GameVersionViewModel()
+        public GameDeltaVersionViewModel()
         {
             SelectSourceCmd = new RelayCommand(SelectSource, () => !Busy);
             SelectTargetCmd = new RelayCommand(SelectTarget, () => !Busy);

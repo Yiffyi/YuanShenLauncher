@@ -27,72 +27,6 @@ namespace Launcher.ViewModel
         /// </summary>
         /// 
 
-        public MHYGameRegion[] DefaultRegions
-        {
-            get => MHYGameRegion.Defaults;
-        }
-
-        private MHYGameRegion region;
-        public MHYGameRegion InputRegion
-        {
-            get => region;
-            set => Set(ref region, value);
-        }
-
-        private MHYGameServer server;
-        public MHYGameServer InputServer
-        {
-            get => server;
-            set
-            {
-                Set(ref server, value);
-                FetchPkgCmd.RaiseCanExecuteChanged();
-            }
-        }
-
-        private List<Model.MHYResource.Diff> diffs;
-        public List<Model.MHYResource.Diff> Diffs
-        {
-            get => diffs;
-            set => Set(ref diffs, value);
-        }
-
-        private Model.MHYResource.Latest latestGame;
-        public Model.MHYResource.Latest LatestGame
-        {
-            get => latestGame;
-            set => Set(ref latestGame, value);
-        }
-
-        public bool loading = false;
-        public bool Loading
-        {
-            get => loading;
-            set
-            {
-                Set(ref loading, value);
-                FetchPkgCmd.RaiseCanExecuteChanged();
-            }
-        }
-
-        public RelayCommand FetchPkgCmd { get; set; }
-        public void FetchPkgList()
-        {
-            Loading = true;
-            FetchPkgCmd.RaiseCanExecuteChanged();
-            MHYApi api = new MHYApi(InputServer);
-
-            Task.Run(async () =>
-            {
-                var res = await api.Resource();
-                this.Diffs = res.Data.Game.Diffs;
-                this.LatestGame = res.Data.Game.Latest;
-
-                Loading = false;
-                FetchPkgCmd.RaiseCanExecuteChanged();
-            });
-        }
-
         public MainViewModel()
         {
             ////if (IsInDesignMode)
@@ -104,8 +38,6 @@ namespace Launcher.ViewModel
             ////    // Code runs "for real"
             ////}
             ///
-            DispatcherHelper.Initialize();
-            FetchPkgCmd = new RelayCommand(FetchPkgList, () => !Loading && InputServer != null);
         }
     }
 }

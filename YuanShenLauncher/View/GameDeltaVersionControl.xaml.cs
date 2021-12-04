@@ -6,12 +6,12 @@ using Launcher.Service;
 namespace Launcher.View
 {
     /// <summary>
-    /// GameVersionControl.xaml 的交互逻辑
+    /// GameDeltaVersion.xaml 的交互逻辑
     /// </summary>
-    public partial class GameVersionControl : UserControl
+    public partial class GameDeltaVersion : UserControl
     {
 
-        public GameVersionControl()
+        public GameDeltaVersion()
         {
             InitializeComponent();
         }

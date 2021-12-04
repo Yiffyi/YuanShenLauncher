@@ -1,7 +1,4 @@
-﻿using System;
-using System.Globalization;
-using System.IO;
-using System.Reflection;
+﻿using GalaSoft.MvvmLight.Threading;
 using System.Windows;
 
 namespace Launcher
@@ -11,5 +8,8 @@ namespace Launcher
     /// </summary>
     public partial class App : Application
     {
+        App()
+        {
+            DispatcherHelper.Initialize();
+        }
     }
-}
