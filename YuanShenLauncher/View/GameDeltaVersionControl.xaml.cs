@@ -33,5 +33,12 @@ namespace Launcher.View
         private void pVerify_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
         }
+
+        private void ProgressBar_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            ProgressBar o = sender as ProgressBar;
+            if (e.NewValue != 0 && e.NewValue != 100) o.Visibility = Visibility.Visible;
+            else o.Visibility = Visibility.Collapsed;
+        }
     }
 }

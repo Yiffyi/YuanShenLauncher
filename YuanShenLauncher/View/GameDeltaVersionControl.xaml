@@ -8,7 +8,7 @@
     xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:view="clr-namespace:Launcher.View"
-    d:DesignHeight="450"
+    d:DesignHeight="600"
     d:DesignWidth="800"
     DataContext="{Binding GameDeltaVersion, Mode=OneWay, Source={StaticResource Locator}}"
     Style="{StaticResource ContentBase}"
@@ -19,7 +19,7 @@
     <DockPanel Margin="16">
 
         <TextBlock DockPanel.Dock="Top" Style="{StaticResource MaterialDesignHeadline3TextBlock}">
-            差异版本创建
+            差异版本克隆
         </TextBlock>
         <StackPanel>
             <view:GameServerControl Server="{Binding Path=DataContext.Server, Mode=TwoWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type view:GameDeltaVersionControl}}}" />
@@ -50,7 +50,7 @@
                 <md:PackIcon
                     Grid.Row="0"
                     Grid.Column="0"
-                    Kind="Globe" />
+                    Kind="FolderFile" />
                 <TextBox
                     Grid.Row="0"
                     Grid.Column="1"
@@ -66,7 +66,7 @@
                 <md:PackIcon
                     Grid.Row="0"
                     Grid.Column="3"
-                    Kind="Server" />
+                    Kind="FolderArrowDown" />
                 <TextBox
                     Grid.Row="0"
                     Grid.Column="4"
@@ -79,7 +79,12 @@
                     浏览
                 </Button>
             </Grid>
-            <Grid MaxHeight="900">
+            <ProgressBar
+                Margin="20,10,20,10"
+                ValueChanged="ProgressBar_ValueChanged"
+                Visibility="Collapsed"
+                Value="{Binding Progress}" />
+            <Grid MinHeight="300" MaxHeight="900">
                 <Grid.RowDefinitions>
                     <RowDefinition />
                     <RowDefinition />
@@ -95,18 +100,27 @@
                     EnableRowVirtualization="True"
                     IsReadOnly="True"
                     ItemsSource="{Binding DeltaVersionResult.DuplicatedFiles}" />
-                <StackPanel Grid.Row="0" Grid.Column="1">
+                <Grid
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    Margin="4">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
                     <Button Command="{Binding SolveDeltaVersionCmd}">
                         检查
                     </Button>
 
-                    <Button Command="{Binding LinkDuplicatedFilesCmd}">
-                        合并相同
+                    <Button Grid.Row="1" Command="{Binding LinkDuplicatedFilesCmd}">
+                        合并重复
                     </Button>
-                    <Button Command="{Binding GenerateAria2ListCmd}">
-                        生成列表
+
+                    <Button Grid.Row="2" Command="{Binding GenerateAria2ListCmd}">
+                        Aria2 列表
                     </Button>
-                </StackPanel>
+                </Grid>
 
                 <DataGrid
                     Grid.Row="0"
@@ -138,11 +152,14 @@
                     <DataGrid.Columns />
                 </DataGrid>-->
                 <StackPanel Grid.Row="1" Grid.Column="0">
-                    <Label Content="{Binding DuplicatedFileSize, Converter={StaticResource sizeConv}}" />
+                    <TextBlock>
+                        <Run>重复文件：</Run>
+                        <Run Text="{Binding DuplicatedFileSize, Converter={StaticResource sizeConv}}" />
+                    </TextBlock>
                 </StackPanel>
                 <StackPanel Grid.Row="1" Grid.Column="2">
                     <TextBlock>
-                        <Run>差异文件大小：</Run>
+                        <Run>差异文件：</Run>
                         <Run Text="{Binding DeltaFileSize, Converter={StaticResource sizeConv}}" />
                     </TextBlock>
                 </StackPanel>

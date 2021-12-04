@@ -82,9 +82,11 @@ namespace Launcher
             outputList.Close();
         }
 
-        public static List<MHYPkgVersion> LinkDeltaVersion(SolveDeltaVersionResult result, string targetGameDirectory)
+        public static List<MHYPkgVersion> LinkDeltaVersion(SolveDeltaVersionResult result, string targetGameDirectory, Action<int> reportProgress)
         {
             List<MHYPkgVersion> hardLinkErrors = new List<MHYPkgVersion>();
+            int total = result.DuplicatedFiles.Count();
+            int cur = 0;
             foreach (MHYPkgVersion f in result.DuplicatedFiles)
             {
                 Console.WriteLine($"os & cn: {f.RemoteName}");
@@ -98,6 +100,8 @@ namespace Launcher
                         hardLinkErrors.Add(f);
                     }
                 }
+
+                reportProgress((++cur) * 100 / total);
             }
             return hardLinkErrors;
         }

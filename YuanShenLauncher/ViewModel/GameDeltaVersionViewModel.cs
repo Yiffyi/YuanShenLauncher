@@ -86,6 +86,13 @@ namespace Launcher.ViewModel
             }
         }
 
+        private int progress;
+        public int Progress
+        {
+            get => progress;
+            set => Set(ref progress, value);
+        }
+
         public RelayCommand SelectTargetCmd { get; set; }
         public void SelectTarget()
         {
@@ -143,7 +150,12 @@ namespace Launcher.ViewModel
             Task.Run(() =>
             {
                 Busy = true;
-                MHYGameHelper.LinkDeltaVersion(DeltaVersionResult, TargetPath);
+
+                MHYGameHelper.LinkDeltaVersion(DeltaVersionResult, TargetPath, p =>
+                {
+                    if (p != Progress) Progress = p;
+                });
+
                 Busy = false;
             });
         }

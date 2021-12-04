@@ -6,7 +6,7 @@
     xmlns:view="clr-namespace:Launcher.View"
     x:Name="mainWindow"
     Title="原神 Launcher"
-    Width="800"
+    Width="950"
     Height="450"
     SizeToContent="Height"
     Style="{StaticResource ContentBase}">
