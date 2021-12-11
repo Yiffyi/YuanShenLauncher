@@ -37,13 +37,13 @@ namespace Launcher
             IEnumerable<MHYPkgVersion> remotePkgVersion;
             Model.MHYResource.Root osResources = await remoteApi.Resource();
             string decompressedPath = osResources.Data.Game.Latest.DecompressedPath;
-            using (Stream stream = await remoteApi.DecompressedFile(decompressedPath, "pkg_version"))
+            using (Stream stream = await MHYApi.DecompressedFile(decompressedPath, "pkg_version"))
             {
                 remotePkgVersion = ParsePkgVersion(stream);
             }
             foreach (string fn in languagePacks)
             {
-                using (Stream stream = await remoteApi.DecompressedFile(decompressedPath, fn))
+                using (Stream stream = await MHYApi.DecompressedFile(decompressedPath, fn))
                 {
                     remotePkgVersion = remotePkgVersion.Concat(ParsePkgVersion(stream));
                 }
@@ -55,7 +55,7 @@ namespace Launcher
                 DecompressedPath = decompressedPath,
                 SourceGameDirectory = sourceGameDirectory,
                 PkgVersions = languagePacks.Append("pkg_version"),
-                LocalPkgVersionDict = localPkgVersion.ToDictionary(fv => fv.ResourceName),
+                LocalPkgVersionDict = localPkgVersion.ToDictionary(fv => fv.NeutralResourceName),
                 DuplicatedFiles = remotePkgVersion.Intersect(localPkgVersion, new MHYPkgVersionCanLink()),
                 DeltaFiles = remotePkgVersion.Except(localPkgVersion, new MHYPkgVersionCanLink())
             };
@@ -63,21 +63,31 @@ namespace Launcher
             return result;
         }
 
-        public static void DeltaFilesToAria2(SolveDeltaVersionResult result, string targetGameDirectory, StreamWriter outputList)
+        public static void RecommendedAria2Conf(StreamWriter outputConf)
         {
-            foreach(string f in result.PkgVersions)
+            outputConf.Write(@"
+file-allocation=falloc
+check-integrity=true
+allow-overwrite=true
+auto-file-renaming=false
+");
+            outputConf.Close();
+        }
+
+        public static void PkgVersionToAria2(IEnumerable<string> pkgVersions, IEnumerable<MHYPkgVersion> files, string decompressedPath, string targetDirectory, StreamWriter outputList)
+        {
+            foreach(string f in pkgVersions)
             {
-                outputList.WriteLine(result.RemoteApi.DecompressedFileUrl(result.DecompressedPath, f).AbsoluteUri);
-                outputList.WriteLine($"  dir={targetGameDirectory}");
+                outputList.WriteLine(MHYApi.DecompressedFileUrl(decompressedPath, f).AbsoluteUri);
+                outputList.WriteLine($"  dir={targetDirectory}");
                 outputList.WriteLine($"  out={f}");
             }
-            foreach (MHYPkgVersion f in result.DeltaFiles)
+            foreach (MHYPkgVersion f in files)
             {
-                outputList.WriteLine(result.RemoteApi.DecompressedFileUrl(result.DecompressedPath, f.RemoteName).AbsoluteUri);
-                outputList.WriteLine($"  dir={targetGameDirectory}");
+                outputList.WriteLine(MHYApi.DecompressedFileUrl(decompressedPath, f.RemoteName).AbsoluteUri);
+                outputList.WriteLine($"  dir={targetDirectory}");
                 outputList.WriteLine($"  out={f.RemoteName}");
                 outputList.WriteLine($"  checksum=md5={f.MD5}");
-                outputList.WriteLine($"  check-integrity=true");
             }
             outputList.Close();
         }
@@ -94,7 +104,7 @@ namespace Launcher
                 if (!File.Exists(fPath))
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(fPath));
-                    bool ret = NativeMethod.CreateHardLink(fPath, Path.Combine(result.SourceGameDirectory, result.LocalPkgVersionDict[f.ResourceName].RemoteName), IntPtr.Zero);
+                    bool ret = NativeMethod.CreateHardLink(fPath, Path.Combine(result.SourceGameDirectory, result.LocalPkgVersionDict[f.NeutralResourceName].RemoteName), IntPtr.Zero);
                     if (!ret)
                     {
                         hardLinkErrors.Add(f);

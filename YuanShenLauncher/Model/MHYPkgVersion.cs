@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Launcher.Model
 {
@@ -8,9 +9,19 @@ namespace Launcher.Model
         public string RemoteName { get; set; }
 
         // 忽略 海外 与 国服 的名称差异
-        public string ResourceName
+        private readonly Lazy<string> neutralResourceName;
+        public string NeutralResourceName
         {
-            get
+            get => neutralResourceName.Value;
+        }
+
+        public string MD5 { get; set; }
+        public long FileSize { get; set; }
+        public bool IsPatch { get; set; }
+
+        MHYPkgVersion()
+        {
+            neutralResourceName = new Lazy<string>(() =>
             {
                 // len("YuanShen_Data\") = 14
                 if (RemoteName.StartsWith(@"YuanShen_Data/"))
@@ -25,24 +36,20 @@ namespace Launcher.Model
                 }
 
                 return RemoteName;
-            }
+            });
         }
-
-        public string MD5 { get; set; }
-        public long FileSize { get; set; }
-        public bool IsPatch { get; set; }
     }
 
     public class MHYPkgVersionCanLink : EqualityComparer<MHYPkgVersion>
     {
         public override bool Equals(MHYPkgVersion x, MHYPkgVersion y)
         {
-            return x.ResourceName == y.ResourceName && x.MD5 == y.MD5;
+            return x.NeutralResourceName == y.NeutralResourceName && x.MD5 == y.MD5;
         }
 
         public override int GetHashCode(MHYPkgVersion obj)
         {
-            return obj.ResourceName.GetHashCode() ^ obj.MD5.GetHashCode();
+            return obj.NeutralResourceName.GetHashCode() ^ obj.MD5.GetHashCode();
         }
     }
 }

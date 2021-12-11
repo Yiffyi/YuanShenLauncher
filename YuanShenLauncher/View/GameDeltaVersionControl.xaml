@@ -16,118 +16,138 @@
     <UserControl.Resources>
         <local:FileSizeConverter x:Key="sizeConv" />
     </UserControl.Resources>
-    <DockPanel Margin="16">
-
-        <TextBlock DockPanel.Dock="Top" Style="{StaticResource MaterialDesignHeadline3TextBlock}">
-            差异版本克隆
-        </TextBlock>
-        <StackPanel>
-            <view:GameServerControl Server="{Binding Path=DataContext.Server, Mode=TwoWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type view:GameDeltaVersionControl}}}" />
-            <Grid>
-                <Grid.Resources>
-                    <Style TargetType="md:PackIcon">
-                        <Setter Property="VerticalAlignment" Value="Center" />
-                        <Setter Property="Margin" Value="6" />
-                        <Setter Property="Width" Value="25" />
-                        <Setter Property="Height" Value="25" />
-                    </Style>
-                    <Style BasedOn="{StaticResource MaterialDesignOutlinedTextBox}" TargetType="TextBox">
-                        <Setter Property="Margin" Value="4" />
-                    </Style>
-                    <Style BasedOn="{StaticResource MaterialDesignRaisedButton}" TargetType="Button">
-                        <Setter Property="Margin" Value="4" />
-                    </Style>
-                </Grid.Resources>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="7*" />
-                    <ColumnDefinition Width="2*" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="7*" />
-                    <ColumnDefinition Width="2*" />
-                </Grid.ColumnDefinitions>
-
-                <md:PackIcon
-                    Grid.Row="0"
-                    Grid.Column="0"
-                    Kind="FolderFile" />
-                <TextBox
-                    Grid.Row="0"
-                    Grid.Column="1"
-                    md:HintAssist.Hint="源位置"
-                    Text="{Binding SourcePath}" />
-                <Button
-                    Grid.Row="0"
-                    Grid.Column="2"
-                    Command="{Binding SelectSourceCmd}">
-                    浏览
-                </Button>
-
-                <md:PackIcon
-                    Grid.Row="0"
-                    Grid.Column="3"
-                    Kind="FolderArrowDown" />
-                <TextBox
-                    Grid.Row="0"
-                    Grid.Column="4"
-                    md:HintAssist.Hint="目标位置"
-                    Text="{Binding TargetPath}" />
-                <Button
-                    Grid.Row="0"
-                    Grid.Column="5"
-                    Command="{Binding SelectTargetCmd}">
-                    浏览
-                </Button>
-            </Grid>
-            <ProgressBar
-                Margin="20,10,20,10"
-                ValueChanged="ProgressBar_ValueChanged"
-                Visibility="Collapsed"
-                Value="{Binding Progress}" />
-            <Grid MinHeight="300" MaxHeight="900">
+    <md:DialogHost CloseOnClickAway="True" IsOpen="{Binding Aria2Popup}">
+        <md:DialogHost.DialogContent>
+            <Grid Margin="16">
                 <Grid.RowDefinitions>
                     <RowDefinition />
                     <RowDefinition />
+                    <RowDefinition />
                 </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <DataGrid
-                    Grid.Row="0"
-                    Grid.Column="0"
-                    EnableRowVirtualization="True"
-                    IsReadOnly="True"
-                    ItemsSource="{Binding DeltaVersionResult.DuplicatedFiles}" />
-                <Grid
-                    Grid.Row="0"
-                    Grid.Column="1"
-                    Margin="4">
+
+                <Label Grid.Row="0">我们推荐使用以下参数启动 Aria2：</Label>
+                <TextBox
+                    Grid.Row="1"
+                    FontFamily="Consolas"
+                    Text="{Binding Aria2Cmdline, Mode=OneWay}" />
+
+                <StackPanel Grid.Row="2" Orientation="Horizontal">
+                    <Button Command="{Binding StartAria2Cmd}">
+                        帮我运行!
+                    </Button>
+                    <Button Margin="8,0,0,0" Command="{x:Static md:DialogHost.CloseDialogCommand}">
+                        朕知道了
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </md:DialogHost.DialogContent>
+        <DockPanel Margin="16">
+
+            <TextBlock DockPanel.Dock="Top" Style="{StaticResource MaterialDesignHeadline3TextBlock}">
+                差异版本克隆
+            </TextBlock>
+            <StackPanel>
+                <view:GameServerControl Server="{Binding Path=DataContext.Server, Mode=TwoWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type view:GameDeltaVersionControl}}}" />
+                <Grid>
+                    <Grid.Resources>
+                        <Style TargetType="md:PackIcon">
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                            <Setter Property="Margin" Value="6" />
+                            <Setter Property="Width" Value="25" />
+                            <Setter Property="Height" Value="25" />
+                        </Style>
+                        <Style BasedOn="{StaticResource MaterialDesignOutlinedTextBox}" TargetType="TextBox">
+                            <Setter Property="Margin" Value="4" />
+                        </Style>
+                        <Style BasedOn="{StaticResource MaterialDesignRaisedButton}" TargetType="Button">
+                            <Setter Property="Margin" Value="4" />
+                        </Style>
+                    </Grid.Resources>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="7*" />
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="7*" />
+                        <ColumnDefinition Width="2*" />
+                    </Grid.ColumnDefinitions>
+
+                    <md:PackIcon
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        Kind="FolderFile" />
+                    <TextBox
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        md:HintAssist.Hint="源位置"
+                        Text="{Binding SourcePath}" />
+                    <Button
+                        Grid.Row="0"
+                        Grid.Column="2"
+                        Command="{Binding SelectSourceCmd}">
+                        浏览
+                    </Button>
+
+                    <md:PackIcon
+                        Grid.Row="0"
+                        Grid.Column="3"
+                        Kind="FolderArrowDown" />
+                    <TextBox
+                        Grid.Row="0"
+                        Grid.Column="4"
+                        md:HintAssist.Hint="目标位置"
+                        Text="{Binding TargetPath}" />
+                    <Button
+                        Grid.Row="0"
+                        Grid.Column="5"
+                        Command="{Binding SelectTargetCmd}">
+                        浏览
+                    </Button>
+                </Grid>
+                <ProgressBar
+                    Margin="20,10,20,10"
+                    ValueChanged="ProgressBar_ValueChanged"
+                    Visibility="Collapsed"
+                    Value="{Binding Progress}" />
+                <Grid MinHeight="300" MaxHeight="900">
                     <Grid.RowDefinitions>
                         <RowDefinition />
                         <RowDefinition />
-                        <RowDefinition />
                     </Grid.RowDefinitions>
-                    <Button Command="{Binding SolveDeltaVersionCmd}">
-                        检查
-                    </Button>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <DataGrid
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        EnableRowVirtualization="True"
+                        IsReadOnly="True"
+                        ItemsSource="{Binding DeltaVersionResult.DuplicatedFiles}" />
+                    <Grid
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        Margin="4">
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <Button Command="{Binding SolveDeltaVersionCmd}">
+                            检查
+                        </Button>
 
-                    <Button Grid.Row="1" Command="{Binding LinkDuplicatedFilesCmd}">
-                        合并重复
-                    </Button>
+                        <Button Grid.Row="1" Command="{Binding LinkDuplicatedFilesCmd}">
+                            复用
+                        </Button>
+                    </Grid>
 
-                    <Button Grid.Row="2" Command="{Binding GenerateAria2ListCmd}">
-                        Aria2 列表
-                    </Button>
-                </Grid>
-
-                <DataGrid
-                    Grid.Row="0"
-                    Grid.Column="2"
-                    IsReadOnly="True"
-                    ItemsSource="{Binding DeltaVersionResult.DeltaFiles}" />
-                <!--<StackPanel
+                    <DataGrid
+                        Grid.Row="0"
+                        Grid.Column="2"
+                        IsReadOnly="True"
+                        ItemsSource="{Binding DeltaVersionResult.DeltaFiles}" />
+                    <!--<StackPanel
                     Grid.Row="0"
                     Grid.Column="0"
                     Margin="4"
@@ -151,19 +171,32 @@
                     TargetUpdated="DgDamagedFiles_TargetUpdated">
                     <DataGrid.Columns />
                 </DataGrid>-->
-                <StackPanel Grid.Row="1" Grid.Column="0">
-                    <TextBlock>
+                    <TextBlock Grid.Row="1" Grid.Column="0">
                         <Run>重复文件：</Run>
                         <Run Text="{Binding DuplicatedFileSize, Converter={StaticResource sizeConv}}" />
                     </TextBlock>
-                </StackPanel>
-                <StackPanel Grid.Row="1" Grid.Column="2">
-                    <TextBlock>
-                        <Run>差异文件：</Run>
-                        <Run Text="{Binding DeltaFileSize, Converter={StaticResource sizeConv}}" />
-                    </TextBlock>
-                </StackPanel>
-            </Grid>
-        </StackPanel>
-    </DockPanel>
+
+                    <Grid
+                        Grid.Row="1"
+                        Grid.Column="2"
+                        VerticalAlignment="Top">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" VerticalAlignment="Center">
+                            <Run>差异文件：</Run>
+                            <Run Text="{Binding DeltaFileSize, Converter={StaticResource sizeConv}}" />
+                        </TextBlock>
+                        <Button
+                            Grid.Column="1"
+                            Command="{Binding GenerateAria2ListCmd}"
+                            CommandParameter="delta">
+                            生成差异 Aria2 列表
+                        </Button>
+                    </Grid>
+                </Grid>
+            </StackPanel>
+        </DockPanel>
+    </md:DialogHost>
 </UserControl>

@@ -2,6 +2,7 @@
 using GalaSoft.MvvmLight.CommandWpf;
 using Launcher.Model;
 using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -83,6 +84,7 @@ namespace Launcher.ViewModel
                 SolveDeltaVersionCmd.RaiseCanExecuteChanged();
                 LinkDuplicatedFilesCmd.RaiseCanExecuteChanged();
                 GenerateAria2ListCmd.RaiseCanExecuteChanged();
+                StartAria2Cmd.RaiseCanExecuteChanged();
             }
         }
 
@@ -160,8 +162,30 @@ namespace Launcher.ViewModel
             });
         }
 
-        public RelayCommand GenerateAria2ListCmd { get; set; }
-        public void GenerateAria2List()
+        private bool aria2Popup;
+        public bool Aria2Popup
+        {
+            get => aria2Popup;
+            set
+            {
+                Set(ref aria2Popup, value);
+            }
+        }
+
+        private string aria2Workdir;
+
+        private string aria2Cmdline;
+        public string Aria2Cmdline
+        {
+            get => aria2Cmdline;
+            set
+            {
+                Set(ref aria2Cmdline, value);
+            }
+        }
+
+        public RelayCommand<string> GenerateAria2ListCmd { get; set; }
+        public void GenerateAria2List(string choice)
         {
             SaveFileDialog d = new SaveFileDialog
             {
@@ -169,8 +193,40 @@ namespace Launcher.ViewModel
             };
             if ((bool)d.ShowDialog())
             {
-                MHYGameHelper.DeltaFilesToAria2(DeltaVersionResult, TargetPath, new StreamWriter(d.FileName, false));
+                Aria2Popup = false;
+                switch (choice)
+                {
+                    case "delta":
+                        {
+                            var r = DeltaVersionResult;
+                            MHYGameHelper.PkgVersionToAria2(r.PkgVersions, r.DeltaFiles, r.DecompressedPath, TargetPath, new StreamWriter(d.FileName, false));
+
+                            var dir = Path.GetDirectoryName(d.FileName);
+                            var conf = Path.Combine(dir, "aria2.conf");
+                            MHYGameHelper.RecommendedAria2Conf(new StreamWriter(conf, false));
+                            NativeMethod.ExtractAria2(dir);
+
+                            aria2Workdir = dir;
+                            Aria2Cmdline = $"aria2c.exe --conf-path=aria2.conf --input-file={d.SafeFileName}";
+                            Aria2Popup = true;
+                            break;
+                        }
+                    default:
+                        throw new ArgumentOutOfRangeException("Only 'delta' Allowed.");
+                }
+
             }
+        }
+
+        public RelayCommand StartAria2Cmd { get; set; }
+        public void StartAria2()
+        {
+            Task.Run(() =>
+            {
+                Busy = true;
+                int ret = NativeMethod.RunCmd(Aria2Cmdline, workingDir: aria2Workdir, wait: true, pauseAfterFinish: true);
+                Busy = false;
+            });
         }
 
         public GameDeltaVersionViewModel()
@@ -179,7 +235,8 @@ namespace Launcher.ViewModel
             SelectTargetCmd = new RelayCommand(SelectTarget, () => !Busy);
             SolveDeltaVersionCmd = new RelayCommand(SolveDeltaVersion, () => !Busy);
             LinkDuplicatedFilesCmd = new RelayCommand(LinkDuplicatedFiles, () => !Busy && DeltaVersionResult != null);
-            GenerateAria2ListCmd = new RelayCommand(GenerateAria2List, () => !Busy && DeltaVersionResult != null);
+            GenerateAria2ListCmd = new RelayCommand<string>(GenerateAria2List, (string _) => !Busy && DeltaVersionResult != null);
+            StartAria2Cmd = new RelayCommand(StartAria2, () => !Busy);
         }
     }
 }

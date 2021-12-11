@@ -41,7 +41,7 @@ namespace Launcher.Service
             return await GetJsonObject<Model.MHYResource.Root>(url);
         }
 
-        public Uri DecompressedFileUrl(string decompressedPath, string remoteName)
+        public static Uri DecompressedFileUrl(string decompressedPath, string remoteName)
         {
             var baseUrl = new Uri(decompressedPath.Last() != '/' ? decompressedPath + '/' : decompressedPath);
             var url = new Uri(baseUrl, remoteName);
@@ -49,7 +49,7 @@ namespace Launcher.Service
             return url;
         }
 
-        public async Task<Stream> DecompressedFile(string decompressedPath, string remoteName)
+        public static async Task<Stream> DecompressedFile(string decompressedPath, string remoteName)
         {
             var url = DecompressedFileUrl(decompressedPath, remoteName);
             return await _client.GetStreamAsync(url);
