@@ -68,7 +68,8 @@ namespace Launcher
             outputConf.Write(@"
 file-allocation=falloc
 check-integrity=true
-allow-overwrite=true
+console-log-level=warn
+allow-overwrite=false
 auto-file-renaming=false
 ");
             outputConf.Close();
@@ -81,6 +82,7 @@ auto-file-renaming=false
                 outputList.WriteLine(MHYApi.DecompressedFileUrl(decompressedPath, f).AbsoluteUri);
                 outputList.WriteLine($"  dir={targetDirectory}");
                 outputList.WriteLine($"  out={f}");
+                outputList.WriteLine(@"  allow-overwrite=true");
             }
             foreach (MHYPkgVersion f in files)
             {
