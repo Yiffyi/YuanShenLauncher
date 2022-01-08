@@ -84,7 +84,7 @@ namespace Launcher.Model
             public List<Diff> Diffs { get; set; }
         }
 
-        public class Plugin2
+        public class PluginEntry
         {
             [JsonProperty("name")]
             public string Name { get; set; }
@@ -108,7 +108,7 @@ namespace Launcher.Model
         public class Plugin
         {
             [JsonProperty("plugins")]
-            public List<Plugin> Plugins { get; set; }
+            public List<PluginEntry> Plugins { get; set; }
 
             [JsonProperty("version")]
             public string Version { get; set; }
@@ -138,7 +138,7 @@ namespace Launcher.Model
             public object ForceUpdate { get; set; }
 
             [JsonProperty("pre_download_game")]
-            public object PreDownloadGame { get; set; }
+            public Game PreDownloadGame { get; set; }
 
             [JsonProperty("deprecated_packages")]
             public List<DeprecatedPackage> DeprecatedPackages { get; set; }
