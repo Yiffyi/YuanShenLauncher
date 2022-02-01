@@ -24,5 +24,11 @@ namespace Launcher.View
         {
             InitializeComponent();
         }
+
+        private void Grid_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (e.NewValue != null) (sender as Grid).Visibility = Visibility.Visible;
+            else (sender as Grid).Visibility = Visibility.Collapsed;
+        }
     }
 }

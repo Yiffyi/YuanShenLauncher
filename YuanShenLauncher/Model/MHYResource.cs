@@ -122,6 +122,32 @@ namespace Launcher.Model
             [JsonProperty("md5")]
             public string Md5 { get; set; }
         }
+        public class Sdk
+        {
+            [JsonProperty("version")]
+            public string Version { get; set; }
+
+            [JsonProperty("path")]
+            public string Path { get; set; }
+
+            [JsonProperty("size")]
+            public string Size { get; set; }
+
+            [JsonProperty("md5")]
+            public string Md5 { get; set; }
+
+            [JsonProperty("pkg_version")]
+            public string PkgVersion { get; set; }
+
+            [JsonProperty("desc")]
+            public string Desc { get; set; }
+
+            [JsonProperty("channel_id")]
+            public string ChannelId { get; set; }
+
+            [JsonProperty("sub_channel_id")]
+            public string SubChannelId { get; set; }
+        }
 
         public class Data
         {
@@ -144,7 +170,7 @@ namespace Launcher.Model
             public List<DeprecatedPackage> DeprecatedPackages { get; set; }
 
             [JsonProperty("sdk")]
-            public object Sdk { get; set; }
+            public Sdk Sdk { get; set; }
         }
 
         public class Root

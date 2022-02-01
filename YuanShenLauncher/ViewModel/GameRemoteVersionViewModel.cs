@@ -51,6 +51,13 @@ namespace Launcher.ViewModel
             set => Set(ref latestGame, value);
         }
 
+        private Model.MHYResource.Sdk sdk;
+        public Model.MHYResource.Sdk Sdk
+        {
+            get => sdk;
+            set => Set(ref sdk, value);
+        }
+
         public bool loading = false;
         public bool Loading
         {
@@ -74,6 +81,7 @@ namespace Launcher.ViewModel
                 var res = await api.Resource();
                 this.Diffs = res.Data.Game.Diffs;
                 this.LatestGame = res.Data.Game.Latest;
+                this.Sdk = res.Data.Sdk;
 
                 Loading = false;
                 FetchPkgCmd.RaiseCanExecuteChanged();

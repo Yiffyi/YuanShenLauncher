@@ -22,6 +22,15 @@ namespace Launcher.Model
                         SubChannelId = 1,
                         SdkStatic = new Uri("https://sdk-static.mihoyo.com/hk4e_cn/"),
                         ResourceKey = "eYd89JmJ"
+                    },
+                    new MHYGameServer
+                    {
+                        Name = "世界树（Bilibili 服）",
+                        LauncherId = 17,
+                        ChannelId = 14,
+                        SubChannelId = 0,
+                        SdkStatic = new Uri("https://sdk-static.mihoyo.com/hk4e_cn/"),
+                        ResourceKey = "KAtdSsoQ"
                     }
                 })
             },
