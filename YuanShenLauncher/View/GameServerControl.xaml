@@ -51,8 +51,8 @@
                 Grid.Row="0"
                 Grid.Column="1"
                 md:HintAssist.Hint="区域"
-                DisplayMemberPath="Name" 
-                SelectionChanged="cbRegion_SelectionChanged"/>
+                DisplayMemberPath="Name"
+                SelectionChanged="cbRegion_SelectionChanged" />
 
             <md:PackIcon
                 Grid.Row="0"
@@ -64,7 +64,7 @@
                 Grid.Column="3"
                 md:HintAssist.Hint="服务器"
                 DisplayMemberPath="Name"
-                SelectionChanged="cbServer_SelectionChanged"/>
+                SelectionChanged="cbServer_SelectionChanged" />
         </Grid>
         <Expander HorizontalAlignment="Stretch" Header="自定义设置">
             <StackPanel Margin="32,0,16,0" Orientation="Horizontal">
@@ -88,6 +88,11 @@
                     IsReadOnly="False"
                     Style="{StaticResource HintTextBoxRo}"
                     Text="{Binding SelectedItem.ResourceKey, ElementName=cbServer}" />
+                <TextBox
+                    md:HintAssist.Hint="Cps"
+                    IsReadOnly="False"
+                    Style="{StaticResource HintTextBoxRo}"
+                    Text="{Binding SelectedItem.Cps, ElementName=cbServer}" />
             </StackPanel>
         </Expander>
     </StackPanel>

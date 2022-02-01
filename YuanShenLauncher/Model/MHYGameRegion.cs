@@ -21,7 +21,8 @@ namespace Launcher.Model
                         ChannelId = 1,
                         SubChannelId = 1,
                         SdkStatic = new Uri("https://sdk-static.mihoyo.com/hk4e_cn/"),
-                        ResourceKey = "eYd89JmJ"
+                        ResourceKey = "eYd89JmJ",
+                        Cps = "pcadbdpz"
                     },
                     new MHYGameServer
                     {
@@ -30,7 +31,8 @@ namespace Launcher.Model
                         ChannelId = 14,
                         SubChannelId = 0,
                         SdkStatic = new Uri("https://sdk-static.mihoyo.com/hk4e_cn/"),
-                        ResourceKey = "KAtdSsoQ"
+                        ResourceKey = "KAtdSsoQ",
+                        Cps = "bilibili"
                     }
                 })
             },
