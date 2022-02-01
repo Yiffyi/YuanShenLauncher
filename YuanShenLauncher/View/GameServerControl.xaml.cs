@@ -21,8 +21,6 @@ namespace Launcher.View
     /// </summary>
     public partial class GameServerControl : UserControl
     {
-
-
         public MHYGameServer Server
         {
             get { return (MHYGameServer)GetValue(ServerProperty); }
@@ -37,6 +35,17 @@ namespace Launcher.View
         public GameServerControl()
         {
             InitializeComponent();
+            cbRegion.ItemsSource = MHYGameRegion.Defaults;
+        }
+
+        private void cbRegion_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            cbServer.ItemsSource = (cbRegion.SelectedItem as MHYGameRegion).Servers;
+        }
+
+        private void cbServer_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            SetCurrentValue(ServerProperty, cbServer.SelectedItem);
         }
     }
 }

@@ -33,12 +33,6 @@
     <UserControl.Style>
         <StaticResource ResourceKey="ContentBase" />
     </UserControl.Style>
-    <UserControl.DataContext>
-        <Binding
-            Mode="OneWay"
-            Path="GameServer"
-            Source="{StaticResource Locator}" />
-    </UserControl.DataContext>
     <StackPanel>
         <Grid Margin="16,16,16,0">
             <Grid.ColumnDefinitions>
@@ -57,8 +51,8 @@
                 Grid.Row="0"
                 Grid.Column="1"
                 md:HintAssist.Hint="区域"
-                DisplayMemberPath="Name"
-                ItemsSource="{Binding DefaultRegions}" />
+                DisplayMemberPath="Name" 
+                SelectionChanged="cbRegion_SelectionChanged"/>
 
             <md:PackIcon
                 Grid.Row="0"
@@ -70,8 +64,7 @@
                 Grid.Column="3"
                 md:HintAssist.Hint="服务器"
                 DisplayMemberPath="Name"
-                ItemsSource="{Binding SelectedItem.Servers, ElementName=cbRegion}"
-                SelectedItem="{Binding Server, Mode=TwoWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type view:GameServerControl}}}" />
+                SelectionChanged="cbServer_SelectionChanged"/>
         </Grid>
         <Expander HorizontalAlignment="Stretch" Header="自定义设置">
             <StackPanel Margin="32,0,16,0" Orientation="Horizontal">
