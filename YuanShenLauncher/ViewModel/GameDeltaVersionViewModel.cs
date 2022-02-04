@@ -158,6 +158,16 @@ namespace Launcher.ViewModel
                     if (p != Progress) Progress = p;
                 });
 
+                if (DeltaVersionResult.Sdk != null)
+                {
+                    Progress = 0;
+                    MHYGameHelper.DownloadSdk(DeltaVersionResult.Sdk.Path, TargetPath, p =>
+                    {
+                        if (p != Progress) Progress = p;
+                    });
+                }
+                MHYGameHelper.WriteIni(DeltaVersionResult, Server, TargetPath);
+
                 Busy = false;
             });
         }

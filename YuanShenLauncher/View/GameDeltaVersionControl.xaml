@@ -137,9 +137,10 @@
                             检查
                         </Button>
 
-                        <Button Grid.Row="1" Command="{Binding LinkDuplicatedFilesCmd}">
-                            复用
-                        </Button>
+                        <Button
+                            Grid.Row="1"
+                            Command="{Binding LinkDuplicatedFilesCmd}"
+                            Content="创建 &amp; 复用" />
                     </Grid>
 
                     <DataGrid

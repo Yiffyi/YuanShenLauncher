@@ -4,22 +4,37 @@ using System.Net;
 
 namespace Launcher
 {
-    internal class PartialHTTPStream : Stream
+    internal class SeekableHTTPStream : Stream
     {
-        private readonly long cacheLength = 1024;
         private const int noDataAvaiable = 0;
-        private MemoryStream stream = null;
-        private long currentChunkNumber = -1;
-        private long? length;
         private bool isDisposed = false;
+        private long position;
+        private Lazy<long> length;
+        private WebResponse baseResponse;
 
-        public PartialHTTPStream(string url)
-            : this(url, 1024) { }
-
-        public PartialHTTPStream(string url, long cacheLength)
+        public SeekableHTTPStream(string url)
         {
-            if (cacheLength > 0) { this.cacheLength = cacheLength; }
             Url = url;
+            length = new Lazy<long>(() =>
+            {
+                HttpWebRequest request = WebRequest.CreateHttp(Url);
+                request.Method = "HEAD";
+                return request.GetResponse().ContentLength;
+            });
+
+            issueRequest(0);
+        }
+
+        public void issueRequest(long begin)
+        {
+            if (baseResponse != null)
+            {
+                baseResponse.Close();
+                baseResponse = null;
+            }
+            HttpWebRequest baseRequest = WebRequest.CreateHttp(Url);
+            if (begin > 0) baseRequest.AddRange(begin);
+            baseResponse = baseRequest.GetResponse();
         }
 
         public string Url { get; private set; }
@@ -56,12 +71,6 @@ namespace Launcher
             get
             {
                 EnsureNotDisposed();
-                if (length == null)
-                {
-                    HttpWebRequest request = WebRequest.CreateHttp(Url);
-                    request.Method = "HEAD";
-                    length = request.GetResponse().ContentLength;
-                }
                 return length.Value;
             }
         }
@@ -71,16 +80,13 @@ namespace Launcher
             get
             {
                 EnsureNotDisposed();
-                long streamPosition = (stream != null) ? stream.Position : 0;
-                long position = (currentChunkNumber != -1) ? currentChunkNumber * cacheLength : 0;
-
-                return position + streamPosition;
+                return position;
             }
             set
             {
                 EnsureNotDisposed();
                 EnsurePositiv(value, "Position");
-                Seek(value);
+                position = value;
             }
         }
 
@@ -100,65 +106,20 @@ namespace Launcher
                 default:
                     break;
             }
-
-            return Seek(offset);
-        }
-
-        private long Seek(long offset)
-        {
-            long chunkNumber = offset / cacheLength;
-
-            if (currentChunkNumber != chunkNumber)
-            {
-                ReadChunk(chunkNumber);
-                currentChunkNumber = chunkNumber;
-            }
-
-            offset -= currentChunkNumber * cacheLength;
-
-            stream.Seek(offset, SeekOrigin.Begin);
-
-            return Position;
-        }
-
-        private void ReadNextChunk()
-        {
-            currentChunkNumber += 1;
-            ReadChunk(currentChunkNumber);
-        }
-
-        private void ReadChunk(long chunkNumberToRead)
-        {
-            long rangeStart = chunkNumberToRead * cacheLength;
-
-            if (rangeStart > Length) { return; }
-
-            long rangeEnd = rangeStart + cacheLength - 1;
-            if (rangeStart + cacheLength > Length)
-            {
-                rangeEnd = Length - 1;
-            }
-
-            if (stream != null) { stream.Close(); }
-            stream = new MemoryStream((int)cacheLength);
-
-            HttpWebRequest request = WebRequest.CreateHttp(Url);
-            request.AddRange(rangeStart, rangeEnd);
-
-            using (WebResponse response = request.GetResponse())
-            {
-                response.GetResponseStream().CopyTo(stream);
-            }
-
-            stream.Position = 0;
+            issueRequest(offset);
+            return Position = offset;
         }
 
         public override void Close()
         {
-            EnsureNotDisposed();
+            // EnsureNotDisposed();
 
             base.Close();
-            if (stream != null) { stream.Close(); }
+            if (baseResponse != null)
+            {
+                baseResponse.Close();
+                baseResponse = null;
+            }
             isDisposed = true;
         }
 
@@ -172,8 +133,6 @@ namespace Launcher
 
             if (buffer.Length - offset < count) { throw new ArgumentException("count"); }
 
-            if (stream == null) { ReadNextChunk(); }
-
             if (Position >= Length) { return noDataAvaiable; }
 
             if (Position + count > Length)
@@ -181,20 +140,11 @@ namespace Launcher
                 count = (int)(Length - Position);
             }
 
-            int bytesRead = stream.Read(buffer, offset, count);
-            int totalBytesRead = bytesRead;
-            count -= bytesRead;
+            int bytesRead = baseResponse.GetResponseStream().Read(buffer, offset, count);
 
-            while (count > noDataAvaiable)
-            {
-                ReadNextChunk();
-                offset += bytesRead;
-                bytesRead = stream.Read(buffer, offset, count);
-                count -= bytesRead;
-                totalBytesRead += bytesRead;
-            }
+            Position += bytesRead;
 
-            return totalBytesRead;
+            return bytesRead;
 
         }
 

@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -14,6 +15,7 @@ namespace Launcher
 {
     public class SolveDeltaVersionResult
     {
+        public string GameVersion { get; set; }
         public MHYApi RemoteApi { get; set; }
         public string DecompressedPath { get; set; }
         public string SourceGameDirectory { get; set; }
@@ -21,6 +23,7 @@ namespace Launcher
         public Dictionary<string, MHYPkgVersion> LocalPkgVersionDict { get; set; }
         public IEnumerable<MHYPkgVersion> DuplicatedFiles { get; set; }
         public IEnumerable<MHYPkgVersion> DeltaFiles { get; set; }
+        public Model.MHYResource.Sdk Sdk { get; set; }
     }
 
     public static class MHYGameHelper
@@ -51,13 +54,15 @@ namespace Launcher
 
             SolveDeltaVersionResult result = new SolveDeltaVersionResult
             {
+                GameVersion = osResources.Data.Game.Latest.Version,
                 RemoteApi = remoteApi,
                 DecompressedPath = decompressedPath,
                 SourceGameDirectory = sourceGameDirectory,
                 PkgVersions = languagePacks.Append("pkg_version"),
                 LocalPkgVersionDict = localPkgVersion.ToDictionary(fv => fv.NeutralResourceName),
                 DuplicatedFiles = remotePkgVersion.Intersect(localPkgVersion, new MHYPkgVersionCanLink()),
-                DeltaFiles = remotePkgVersion.Except(localPkgVersion, new MHYPkgVersionCanLink())
+                DeltaFiles = remotePkgVersion.Except(localPkgVersion, new MHYPkgVersionCanLink()),
+                Sdk = osResources.Data.Sdk
             };
 
             return result;
@@ -77,7 +82,7 @@ auto-file-renaming=false
 
         public static void PkgVersionToAria2(IEnumerable<string> pkgVersions, IEnumerable<MHYPkgVersion> files, string decompressedPath, string targetDirectory, StreamWriter outputList)
         {
-            foreach(string f in pkgVersions)
+            foreach (string f in pkgVersions)
             {
                 outputList.WriteLine(MHYApi.DecompressedFileUrl(decompressedPath, f).AbsoluteUri);
                 outputList.WriteLine($"  dir={targetDirectory}");
@@ -92,6 +97,63 @@ auto-file-renaming=false
                 outputList.WriteLine($"  checksum=md5={f.MD5}");
             }
             outputList.Close();
+        }
+
+        public static void DownloadSdk(string url, string targetDirectory, Action<int> reportProgress)
+        {
+            using (var zip = new ZipArchive(new SeekableHTTPStream(url), ZipArchiveMode.Read, leaveOpen: false))
+            {
+                DirectoryInfo directoryInfo = Directory.CreateDirectory(targetDirectory);
+                string text = directoryInfo.FullName;
+                int total = zip.Entries.Count;
+                int current = 0;
+                foreach (ZipArchiveEntry entry in zip.Entries)
+                {
+                    string fullPath = Path.GetFullPath(Path.Combine(text, entry.FullName));
+                    if (!fullPath.StartsWith(text, StringComparison.OrdinalIgnoreCase))
+                    {
+                        throw new IOException("IO_ExtractingResultsInOutside");
+                    }
+
+                    if (Path.GetFileName(fullPath).Length == 0)
+                    {
+                        if (entry.Length != 0L)
+                        {
+                            throw new IOException("IO_DirectoryNameWithData");
+                        }
+
+                        Directory.CreateDirectory(fullPath);
+                    }
+                    else
+                    {
+                        Directory.CreateDirectory(Path.GetDirectoryName(fullPath));
+                        entry.ExtractToFile(fullPath, overwrite: true);
+                    }
+
+                    reportProgress((++current) * 100 / total);
+                }
+            }
+        }
+
+        public static void WriteIni(SolveDeltaVersionResult result, MHYGameServer server, string targetGameDirectory)
+        {
+            if (result.Sdk == null)
+            {
+                File.WriteAllText(
+                    Path.Combine(targetGameDirectory, "config.ini"),
+                    server.ToIniConfig(result.GameVersion, ""),
+                    Encoding.ASCII
+                );
+            }
+            else
+            {
+                File.WriteAllText(
+                    Path.Combine(targetGameDirectory, "config.ini"),
+                    server.ToIniConfig(result.GameVersion, result.Sdk.Version),
+                    Encoding.ASCII
+                );
+            }
+
         }
 
         public static List<MHYPkgVersion> LinkDeltaVersion(SolveDeltaVersionResult result, string targetGameDirectory, Action<int> reportProgress)
