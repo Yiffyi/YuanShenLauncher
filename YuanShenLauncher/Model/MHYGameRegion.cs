@@ -49,7 +49,8 @@ namespace Launcher.Model
                         ChannelId = 1,
                         SubChannelId = 0,
                         SdkStatic = new Uri("https://sdk-os-static.mihoyo.com/hk4e_global/"),
-                        ResourceKey = "gcStgarh"
+                        ResourceKey = "gcStgarh",
+                        Cps = "mihoyo"
                     }
                 })
             }
