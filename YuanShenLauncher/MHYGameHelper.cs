@@ -16,19 +16,17 @@ namespace Launcher
     public class SolveDeltaVersionResult
     {
         public string GameVersion { get; set; }
-        public MHYApi RemoteApi { get; set; }
         public string DecompressedPath { get; set; }
         public string SourceGameDirectory { get; set; }
         public IEnumerable<string> PkgVersions { get; set; }
         public Dictionary<string, MHYPkgVersion> LocalPkgVersionDict { get; set; }
         public IEnumerable<MHYPkgVersion> DuplicatedFiles { get; set; }
         public IEnumerable<MHYPkgVersion> DeltaFiles { get; set; }
-        public Model.MHYResource.Sdk Sdk { get; set; }
     }
 
     public static class MHYGameHelper
     {
-        public static async Task<SolveDeltaVersionResult> SolveDeltaVersion(string sourceGameDirectory, MHYApi remoteApi)
+        public static async Task<SolveDeltaVersionResult> SolveDeltaVersion(string sourceGameDirectory, Model.MHYResource.Latest latestGame)
         {
             List<string> languagePacks = FindLanguagePacks(sourceGameDirectory);
             IEnumerable<MHYPkgVersion> localPkgVersion = ParsePkgVersion(Path.Combine(sourceGameDirectory, "pkg_version"));
@@ -38,8 +36,7 @@ namespace Launcher
             }
 
             IEnumerable<MHYPkgVersion> remotePkgVersion;
-            Model.MHYResource.Root osResources = await remoteApi.Resource();
-            string decompressedPath = osResources.Data.Game.Latest.DecompressedPath;
+            string decompressedPath = latestGame.DecompressedPath;
             using (Stream stream = await MHYApi.DecompressedFile(decompressedPath, "pkg_version"))
             {
                 remotePkgVersion = ParsePkgVersion(stream);
@@ -54,15 +51,13 @@ namespace Launcher
 
             SolveDeltaVersionResult result = new SolveDeltaVersionResult
             {
-                GameVersion = osResources.Data.Game.Latest.Version,
-                RemoteApi = remoteApi,
+                GameVersion = latestGame.Version,
                 DecompressedPath = decompressedPath,
                 SourceGameDirectory = sourceGameDirectory,
                 PkgVersions = languagePacks.Append("pkg_version"),
                 LocalPkgVersionDict = localPkgVersion.ToDictionary(fv => fv.NeutralResourceName),
                 DuplicatedFiles = remotePkgVersion.Intersect(localPkgVersion, new MHYPkgVersionCanLink()),
-                DeltaFiles = remotePkgVersion.Except(localPkgVersion, new MHYPkgVersionCanLink()),
-                Sdk = osResources.Data.Sdk
+                DeltaFiles = remotePkgVersion.Except(localPkgVersion, new MHYPkgVersionCanLink())
             };
 
             return result;
@@ -137,23 +132,19 @@ auto-file-renaming=false
 
         public static void WriteIni(SolveDeltaVersionResult result, MHYGameServer server, string targetGameDirectory)
         {
-            if (result.Sdk == null)
-            {
-                File.WriteAllText(
-                    Path.Combine(targetGameDirectory, "config.ini"),
-                    server.ToIniConfig(result.GameVersion, ""),
-                    Encoding.ASCII
-                );
-            }
-            else
-            {
-                File.WriteAllText(
-                    Path.Combine(targetGameDirectory, "config.ini"),
-                    server.ToIniConfig(result.GameVersion, result.Sdk.Version),
-                    Encoding.ASCII
-                );
-            }
-
+            File.WriteAllText(
+                Path.Combine(targetGameDirectory, "config.ini"),
+                server.ToIniConfig(result.GameVersion, ""),
+                Encoding.ASCII
+            );
+        }
+        public static void WriteIni(SolveDeltaVersionResult result, MHYGameServer server, string sdkVersion, string targetGameDirectory)
+        {
+            File.WriteAllText(
+                Path.Combine(targetGameDirectory, "config.ini"),
+                server.ToIniConfig(result.GameVersion, sdkVersion),
+                Encoding.ASCII
+            );
         }
 
         public static List<MHYPkgVersion> LinkDeltaVersion(SolveDeltaVersionResult result, string targetGameDirectory, Action<int> reportProgress)

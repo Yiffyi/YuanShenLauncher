@@ -47,7 +47,7 @@
                 差异版本克隆
             </TextBlock>
             <StackPanel>
-                <view:GameServerControl Server="{Binding Path=DataContext.Server, Mode=TwoWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type view:GameDeltaVersionControl}}}" />
+                <view:GameServerControl Server="{Binding Path=Server, Mode=OneWayToSource}" UsePreDownload="{Binding Path=UsePreDownload, Mode=OneWayToSource}" />
                 <Grid>
                     <Grid.Resources>
                         <Style TargetType="md:PackIcon">

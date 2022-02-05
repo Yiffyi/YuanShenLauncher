@@ -1,5 +1,6 @@
 ﻿using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.CommandWpf;
+using GalaSoft.MvvmLight.Threading;
 using Launcher.Model;
 using Microsoft.Win32;
 using System;
@@ -17,6 +18,13 @@ namespace Launcher.ViewModel
         {
             get => server;
             set => Set(ref server, value);
+        }
+
+        private bool usePreDownload;
+        public bool UsePreDownload
+        {
+            get => usePreDownload;
+            set => Set(ref usePreDownload, value);
         }
 
         private string sourcePath;
@@ -139,36 +147,53 @@ namespace Launcher.ViewModel
         }
 
         public RelayCommand SolveDeltaVersionCmd { get; set; }
-        public async void SolveDeltaVersion()
+        public void SolveDeltaVersion()
         {
             Busy = true;
-            DeltaVersionResult = await MHYGameHelper.SolveDeltaVersion(SourcePath, Server.Api);
-            Busy = false;
+            Task.Run(async () =>
+            {
+                var remoteRes = await Server.Api.Resource();
+                var latestGame = UsePreDownload ? remoteRes.Data.PreDownloadGame?.Latest : remoteRes.Data.Game.Latest;
+                var result = await MHYGameHelper.SolveDeltaVersion(SourcePath, latestGame);
+                await DispatcherHelper.RunAsync(() =>
+                {
+                    DeltaVersionResult = result;
+                    Busy = false;
+                });
+            });
         }
 
         public RelayCommand LinkDuplicatedFilesCmd { get; set; }
         public void LinkDuplicatedFiles()
         {
-            Task.Run(() =>
+            Busy = true;
+            Task.Run(async () =>
             {
-                Busy = true;
 
                 MHYGameHelper.LinkDeltaVersion(DeltaVersionResult, TargetPath, p =>
                 {
                     if (p != Progress) Progress = p;
                 });
 
-                if (DeltaVersionResult.Sdk != null)
+                var remoteRes = await Server.Api.Resource();
+                if (remoteRes.Data.Sdk != null)
                 {
                     Progress = 0;
-                    MHYGameHelper.DownloadSdk(DeltaVersionResult.Sdk.Path, TargetPath, p =>
+                    MHYGameHelper.DownloadSdk(remoteRes.Data.Sdk.Path, TargetPath, p =>
                     {
                         if (p != Progress) Progress = p;
                     });
+                    MHYGameHelper.WriteIni(DeltaVersionResult, Server, remoteRes.Data.Sdk.Version, TargetPath);
                 }
-                MHYGameHelper.WriteIni(DeltaVersionResult, Server, TargetPath);
+                else
+                {
+                    MHYGameHelper.WriteIni(DeltaVersionResult, Server, TargetPath);
+                }
 
-                Busy = false;
+                await DispatcherHelper.RunAsync(() =>
+                {
+                    Busy = false;
+                });
             });
         }
 

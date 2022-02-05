@@ -64,7 +64,13 @@
                 DisplayMemberPath="Name"
                 SelectionChanged="cbServer_SelectionChanged" />
         </Grid>
-        <CheckBox Margin="16,0,16,0" HorizontalAlignment="Right">看看预下载</CheckBox>
+        <CheckBox
+            x:Name="cbPre"
+            Margin="16,0,16,0"
+            HorizontalAlignment="Right"
+            Checked="cbPre_CheckedChanged" Unchecked="cbPre_CheckedChanged">
+            看看预下载
+        </CheckBox>
         <Expander HorizontalAlignment="Stretch" Header="自定义设置">
             <StackPanel Margin="32,0,16,0" Orientation="Horizontal">
                 <TextBox

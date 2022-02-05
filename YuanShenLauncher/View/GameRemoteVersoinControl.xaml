@@ -52,7 +52,7 @@
             确认
         </Button>
         <StackPanel>
-            <view:GameServerControl Server="{Binding Path=DataContext.InputServer, Mode=TwoWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type view:GameRemoteVersoinControl}}}" />
+            <view:GameServerControl Server="{Binding Path=InputServer, Mode=OneWayToSource}" UsePreDownload="{Binding Path=UsePreDownload, Mode=OneWayToSource}" />
             <TextBlock Margin="4,16,4,4" Style="{StaticResource MaterialDesignHeadline6TextBlock}">完整包</TextBlock>
             <Grid>
                 <Grid.RowDefinitions>

@@ -1,18 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Launcher.Model;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using Launcher.Model;
 
 namespace Launcher.View
 {
@@ -27,10 +15,18 @@ namespace Launcher.View
             set { SetValue(ServerProperty, value); }
         }
 
+        public bool UsePreDownload
+        {
+            get { return (bool)GetValue(UsePreDownloadProperty); }
+            set { SetValue(UsePreDownloadProperty, value); }
+        }
+
         // Using a DependencyProperty as the backing store for RegionProperty.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ServerProperty =
             DependencyProperty.Register("Server", typeof(MHYGameServer), typeof(GameServerControl));
 
+        public static readonly DependencyProperty UsePreDownloadProperty =
+            DependencyProperty.Register("UsePreDownload", typeof(bool), typeof(GameServerControl));
 
         public GameServerControl()
         {
@@ -46,6 +42,11 @@ namespace Launcher.View
         private void cbServer_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             SetCurrentValue(ServerProperty, cbServer.SelectedItem);
+        }
+
+        private void cbPre_CheckedChanged(object sender, RoutedEventArgs e)
+        {
+            SetCurrentValue(UsePreDownloadProperty, (sender as CheckBox).IsChecked);
         }
     }
 }

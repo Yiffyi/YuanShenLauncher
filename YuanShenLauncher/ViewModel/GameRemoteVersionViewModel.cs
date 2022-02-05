@@ -37,6 +37,13 @@ namespace Launcher.ViewModel
             }
         }
 
+        private bool usePreDownload;
+        public bool UsePreDownload
+        {
+            get => usePreDownload;
+            set => Set(ref usePreDownload, value);
+        }
+
         private List<Model.MHYResource.Diff> diffs;
         public List<Model.MHYResource.Diff> Diffs
         {
@@ -73,18 +80,17 @@ namespace Launcher.ViewModel
         public void FetchPkgList()
         {
             Loading = true;
-            FetchPkgCmd.RaiseCanExecuteChanged();
             MHYApi api = new MHYApi(InputServer);
 
             Task.Run(async () =>
             {
                 var res = await api.Resource();
-                this.Diffs = res.Data.Game.Diffs;
-                this.LatestGame = res.Data.Game.Latest;
+                var gameData = UsePreDownload ? res.Data.PreDownloadGame : res.Data.Game;
+                this.Diffs = gameData?.Diffs;
+                this.LatestGame = gameData?.Latest;
                 this.Sdk = res.Data.Sdk;
 
-                Loading = false;
-                FetchPkgCmd.RaiseCanExecuteChanged();
+                await DispatcherHelper.RunAsync(()=> Loading = false);
             });
         }
 
