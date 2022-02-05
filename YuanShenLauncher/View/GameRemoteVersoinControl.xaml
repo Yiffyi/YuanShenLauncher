@@ -258,55 +258,55 @@
                     <ColumnDefinition Width="4*" />
                 </Grid.ColumnDefinitions>
                 <TextBox
-                                        Grid.Row="0"
-                                        Grid.Column="0"
-                                        md:HintAssist.Hint="通道 ID"
-                                        Style="{StaticResource HintTextBoxRo}"
-                                        Text="{Binding ChannelId}" />
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    md:HintAssist.Hint="通道 ID"
+                    Style="{StaticResource HintTextBoxRo}"
+                    Text="{Binding ChannelId}" />
 
                 <TextBox
-                                        Grid.Row="0"
-                                        Grid.Column="1"
-                                        md:HintAssist.Hint="亚通道 ID"
-                                        Style="{StaticResource HintTextBoxRo}"
-                                        Text="{Binding SubChannelId}" />
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    md:HintAssist.Hint="亚通道 ID"
+                    Style="{StaticResource HintTextBoxRo}"
+                    Text="{Binding SubChannelId}" />
                 <TextBox
-                                        Grid.Row="0"
-                                        Grid.Column="2"
-                                        md:HintAssist.Hint="MD5"
-                                        Style="{StaticResource HintTextBoxRo}"
-                                        Text="{Binding Md5}" />
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    md:HintAssist.Hint="MD5"
+                    Style="{StaticResource HintTextBoxRo}"
+                    Text="{Binding Md5}" />
                 <TextBox
-                                        Grid.Row="1"
-                                        Grid.Column="0"
-                                        md:HintAssist.Hint="版本"
-                                        Style="{StaticResource HintTextBoxRo}"
-                                        Text="{Binding Version}" />
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    md:HintAssist.Hint="版本"
+                    Style="{StaticResource HintTextBoxRo}"
+                    Text="{Binding Version}" />
                 <TextBox
-                                        Grid.Row="1"
-                                        Grid.Column="1"
-                                        md:HintAssist.Hint="大小（目前恒为0）"
-                                        Style="{StaticResource HintTextBoxRo}"
-                                        Text="{Binding Size, Converter={StaticResource sizeConv}}" />
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    md:HintAssist.Hint="大小（目前恒为0）"
+                    Style="{StaticResource HintTextBoxRo}"
+                    Text="{Binding Size, Converter={StaticResource sizeConv}}" />
                 <TextBox
-                                        Grid.Row="1"
-                                        Grid.Column="2"
-                                        md:HintAssist.Hint="直链"
-                                        Style="{StaticResource HintTextBoxRo}"
-                                        Text="{Binding Path}" />
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    md:HintAssist.Hint="直链"
+                    Style="{StaticResource HintTextBoxRo}"
+                    Text="{Binding Path}" />
                 <TextBox
-                                        Grid.Row="2"
-                                        Grid.Column="0"
+                    Grid.Row="2"
+                    Grid.Column="0"
                     Grid.ColumnSpan="2"
-                                        md:HintAssist.Hint="PkgVersion 文件名"
-                                        Style="{StaticResource HintTextBoxRo}"
-                                        Text="{Binding PkgVersion}" />
+                    md:HintAssist.Hint="PkgVersion 文件名"
+                    Style="{StaticResource HintTextBoxRo}"
+                    Text="{Binding PkgVersion}" />
                 <TextBox
-                                        Grid.Row="2"
-                                        Grid.Column="2"
-                                        md:HintAssist.Hint="描述"
-                                        Style="{StaticResource HintTextBoxRo}"
-                                        Text="{Binding Desc}" />
+                    Grid.Row="2"
+                    Grid.Column="2"
+                    md:HintAssist.Hint="描述"
+                    Style="{StaticResource HintTextBoxRo}"
+                    Text="{Binding Desc}" />
             </Grid>
         </StackPanel>
         <!--<view:GameDeltaVersion />-->
