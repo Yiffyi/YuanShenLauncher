@@ -25,17 +25,13 @@
             <Style x:Key="ContentBase" TargetType="ContentControl">
                 <Setter Property="FontFamily" Value="/Resource/#HarmonyOS Sans SC" />
                 <Setter Property="FontSize" Value="15" />
-                <Setter Property="FontWeight" Value="Regular" />
                 <Setter Property="UseLayoutRounding" Value="True" />
                 <Setter Property="SnapsToDevicePixels" Value="True" />
-                <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
                 <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}" />
                 <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
             </Style>
             <Style BasedOn="{StaticResource MaterialDesignContextMenu}" TargetType="ContextMenu">
-                <Setter Property="FontFamily" Value="/Resource/#HarmonyOS Sans SC" />
                 <Setter Property="FontSize" Value="14" />
-                <Setter Property="FontWeight" Value="Regular" />
             </Style>
         </ResourceDictionary>
     </Application.Resources>

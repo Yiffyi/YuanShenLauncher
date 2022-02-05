@@ -9,6 +9,7 @@
     xmlns:view="clr-namespace:Launcher.View"
     d:DesignHeight="200"
     d:DesignWidth="800"
+    Style="{StaticResource ContentBase}"
     mc:Ignorable="d">
     <UserControl.Resources>
         <Style TargetType="md:PackIcon">
@@ -30,9 +31,6 @@
             <Setter Property="IsReadOnly" Value="True" />
         </Style>
     </UserControl.Resources>
-    <UserControl.Style>
-        <StaticResource ResourceKey="ContentBase" />
-    </UserControl.Style>
     <StackPanel>
         <Grid Margin="16,16,16,0">
             <Grid.ColumnDefinitions>
@@ -66,6 +64,7 @@
                 DisplayMemberPath="Name"
                 SelectionChanged="cbServer_SelectionChanged" />
         </Grid>
+        <CheckBox Margin="16,0,16,0" HorizontalAlignment="Right">看看预下载</CheckBox>
         <Expander HorizontalAlignment="Stretch" Header="自定义设置">
             <StackPanel Margin="32,0,16,0" Orientation="Horizontal">
                 <TextBox
